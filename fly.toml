@@ -7,6 +7,7 @@ app = 'rakuten-clarification-tool'
 primary_region = 'iad'
 
 [build]
+  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 3001
@@ -17,9 +18,10 @@ primary_region = 'iad'
   processes = ['app']
 
 [[vm]]
-  memory = '1gb'
+  memory = '2gb'
   cpu_kind = 'shared'
-  cpus = 1
+  cpus = 2
 
 [env]
   PORT = "3001"
+  NODE_ENV = "production"
