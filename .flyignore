@@ -1,0 +1,9 @@
+node_modules
+.git
+screenshots
+results
+uploads
+*.log
+.DS_Store
+.vscode
+.idea

@@ -7,7 +7,6 @@ app = 'rakuten-clarification-tool'
 primary_region = 'iad'
 
 [build]
-  dockerfile = "Dockerfile"
 
 [http_service]
   internal_port = 3001
