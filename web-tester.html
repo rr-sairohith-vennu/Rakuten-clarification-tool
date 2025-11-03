@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakuten Store Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            color: #f5f5f7;
+            min-height: 100vh;
+            padding: 0;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 60px 20px 40px;
+        }
+
+        h1 {
+            font-size: 64px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 21px;
+            color: #86868b;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: -0.01em;
+        }
+
+        .login-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-dot.logged-in {
+            background: #30d158;
+            box-shadow: 0 0 20px rgba(48, 209, 88, 0.5);
+        }
+
+        .status-dot.logged-out {
+            background: #ff453a;
+            box-shadow: 0 0 20px rgba(255, 69, 58, 0.5);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 980px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: scale(1.02);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-danger {
+            background: rgba(255, 69, 58, 0.15);
+            color: #ff453a;
+            border: 1px solid rgba(255, 69, 58, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 69, 58, 0.25);
+            border-color: rgba(255, 69, 58, 0.5);
+        }
+
+        .btn-success {
+            background: #30d158;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-success:hover {
+            background: #32d75a;
+        }
+
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #86868b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f5f5f7;
+        }
+
+        .tab:hover:not(.active) {
+            color: #f5f5f7;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 80px 40px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .upload-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: #f5f5f7;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 15px;
+            color: #f5f5f7;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #0071e3;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .progress-section {
+            display: none;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0071e3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 19px;
+            font-weight: 500;
+            color: #86868b;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            padding: 32px 24px;
+            border-radius: 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .summary-card.pass {
+            border-color: rgba(48, 209, 88, 0.3);
+        }
+
+        .summary-card.fail {
+            border-color: rgba(255, 69, 58, 0.3);
+        }
+
+        .summary-card.pending {
+            border-color: rgba(255, 159, 10, 0.3);
+        }
+
+        .summary-number {
+            font-size: 56px;
+            font-weight: 700;
+            margin: 12px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .summary-card.pass .summary-number {
+            color: #30d158;
+        }
+
+        .summary-card.fail .summary-number {
+            color: #ff453a;
+        }
+
+        .summary-card.pending .summary-number {
+            color: #ff9f0a;
+        }
+
+        .summary-card.error .summary-number {
+            color: #ff453a;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #86868b;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            font-size: 13px;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        td {
+            font-size: 15px;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 980px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
+            letter-spacing: 0.02em;
+        }
+
+        .status-badge.PASS {
+            background: rgba(48, 209, 88, 0.15);
+            color: #30d158;
+        }
+
+        .status-badge.FAIL {
+            background: rgba(255, 69, 58, 0.15);
+            color: #ff453a;
+        }
+
+        .status-badge.PENDING {
+            background: rgba(255, 159, 10, 0.15);
+            color: #ff9f0a;
+        }
+
+        .status-badge.ERROR {
+            background: rgba(255, 69, 58, 0.15);
+            color: #ff453a;
+        }
+
+        .status-badge.MANUAL_TESTING_REQUIRED {
+            background: rgba(191, 90, 242, 0.15);
+            color: #bf5af2;
+        }
+
+        a {
+            color: #0071e3;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #0077ed;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            background: rgba(0, 113, 227, 0.1);
+            border: 1px solid rgba(0, 113, 227, 0.2);
+            color: #0071e3;
+        }
+
+        .test-again-container {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .test-section.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Store Tester</h1>
+            <p class="subtitle">Automated testing with visual proof</p>
+        </div>
+
+        <!-- Login Section -->
+        <div class="card">
+            <h2 class="card-title">Authentication</h2>
+            <div class="login-status">
+                <div class="status-indicator">
+                    <span class="status-dot logged-out" id="statusDot"></span>
+                    <span id="statusText">Checking status...</span>
+                </div>
+                <div>
+                    <button class="btn btn-primary" id="loginBtn" style="display: none;">Login</button>
+                    <button class="btn btn-danger" id="logoutBtn" style="display: none;">Logout</button>
+                </div>
+            </div>
+            <div class="alert" id="loginAlert" style="display: none;">
+                <strong>First time:</strong> Login once (60 seconds), then all tests run automatically in the background.
+            </div>
+        </div>
+
+        <!-- Test Section -->
+        <div class="card" id="testSection">
+            <div class="tabs">
+                <button class="tab active" data-tab="csv">Upload CSV</button>
+                <button class="tab" data-tab="single">Single Store</button>
+            </div>
+
+            <!-- CSV Upload Tab -->
+            <div class="tab-content active" id="csv-content">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3 style="margin-bottom: 8px; font-size: 21px; font-weight: 600;">Drop your CSV file</h3>
+                    <p style="color: #86868b; margin-bottom: 20px;">or click to browse</p>
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                    <p style="color: #86868b; font-size: 13px;">Selected: <span id="fileName" style="color: #0071e3;">None</span></p>
+                </div>
+                <button class="btn btn-success" id="startBulkTestBtn" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 17px;" disabled>
+                    Start Testing
+                </button>
+            </div>
+
+            <!-- Single Store Tab -->
+            <div class="tab-content" id="single-content">
+                <form id="singleStoreForm">
+                    <div class="form-group">
+                        <label>Store ID</label>
+                        <input type="number" id="storeId" required placeholder="9">
+                    </div>
+                    <div class="form-group">
+                        <label>Store Name</label>
+                        <input type="text" id="storeName" required placeholder="Dell Technologies">
+                    </div>
+                    <div class="form-group">
+                        <label>XFAS URL</label>
+                        <input type="text" id="xfasUrl" required placeholder="https://www.rakuten.com/store_id-xfas">
+                    </div>
+                    <div class="form-group">
+                        <label>Merchant Site URL</label>
+                        <input type="text" id="merchantUrl" required placeholder="https://www.store.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Network ID</label>
+                        <input type="number" id="networkId" placeholder="2">
+                    </div>
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 16px; font-size: 17px;">
+                        Test Store
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="card progress-section" id="progressSection">
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <div class="loading-text">Testing in progress...</div>
+                <p style="color: #86868b; margin-top: 12px; font-size: 15px;">
+                    This may take a few minutes
+                </p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="card">
+                <h2 class="card-title">Test Results</h2>
+                <div class="summary-cards" id="summaryCards"></div>
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Store Name</th>
+                                <th>Status</th>
+                                <th>Tested URL</th>
+                                <th>Landing URL</th>
+                                <th>Screenshot</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody"></tbody>
+                    </table>
+                </div>
+                <div class="test-again-container">
+                    <button class="btn btn-primary" id="testAgainBtn" style="padding: 14px 32px;">Test Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let selectedFile = null;
+
+        // Check login status
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/login-status`);
+                const data = await response.json();
+
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                const loginBtn = document.getElementById('loginBtn');
+                const logoutBtn = document.getElementById('logoutBtn');
+                const loginAlert = document.getElementById('loginAlert');
+                const testSection = document.getElementById('testSection');
+
+                if (data.loggedIn) {
+                    statusDot.className = 'status-dot logged-in';
+                    statusText.textContent = 'Authenticated';
+                    loginBtn.style.display = 'none';
+                    logoutBtn.style.display = 'inline-block';
+                    loginAlert.style.display = 'none';
+                    testSection.classList.remove('disabled');
+                } else {
+                    statusDot.className = 'status-dot logged-out';
+                    statusText.textContent = 'Not authenticated';
+                    loginBtn.style.display = 'inline-block';
+                    logoutBtn.style.display = 'none';
+                    loginAlert.style.display = 'block';
+                    testSection.classList.add('disabled');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Login
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Opening browser...';
+
+            try {
+                const response = await fetch(`${API_BASE}/setup-login`, { method: 'POST' });
+                if (response.ok) {
+                    alert('Login successful!');
+                    checkLoginStatus();
+                } else {
+                    alert('Login failed');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if (confirm('Logout? You will need to login again.')) {
+                await fetch(`${API_BASE}/logout`, { method: 'DELETE' });
+                checkLoginStatus();
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+            });
+        });
+
+        // File upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const startBulkTestBtn = document.getElementById('startBulkTestBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                handleFile(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            startBulkTestBtn.disabled = false;
+        }
+
+        // Start bulk test
+        startBulkTestBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            document.getElementById('testSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+
+            try {
+                // Upload file first to get streaming endpoint
+                const response = await fetch(`${API_BASE}/test-csv-stream`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to start testing');
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                const results = [];
+                let summary = null;
+                let resultFile = null;
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = JSON.parse(line.substring(6));
+
+                            if (data.type === 'start') {
+                                console.log(`Starting test for ${data.total} stores`);
+                                // Initialize results section
+                                document.getElementById('resultsSection').style.display = 'block';
+                                document.getElementById('summaryCards').innerHTML = '';
+                                document.getElementById('resultsBody').innerHTML = '';
+                            } else if (data.type === 'result') {
+                                // Add result row immediately as it completes
+                                results.push(data.result);
+                                addResultRow(data.result);
+                                updateSummaryCards(results);
+                            } else if (data.type === 'complete') {
+                                // Final summary
+                                summary = data.summary;
+                                resultFile = data.resultFile;
+                                document.getElementById('progressSection').style.display = 'none';
+                                updateSummaryCards(results, summary, resultFile);
+                                showTestAgainButton();
+                            } else if (data.type === 'error') {
+                                throw new Error(data.error);
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('testSection').style.display = 'block';
+            }
+        });
+
+        // Single store test
+        document.getElementById('singleStoreForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const storeData = {
+                store_id: document.getElementById('storeId').value,
+                store_name: document.getElementById('storeName').value,
+                xfas_url: document.getElementById('xfasUrl').value,
+                merchant_site_url: document.getElementById('merchantUrl').value,
+                network_id: document.getElementById('networkId').value || 'N/A'
+            };
+
+            document.getElementById('testSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE}/test-single`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(storeData)
+                });
+
+                const data = await response.json();
+                displayResults({
+                    summary: {
+                        total: 1,
+                        passed: data.result.status === 'PASS' ? 1 : 0,
+                        failed: data.result.status === 'FAIL' ? 1 : 0,
+                        pending: data.result.status === 'PENDING' ? 1 : 0,
+                        errors: data.result.status === 'ERROR' ? 1 : 0
+                    },
+                    results: [data.result]
+                });
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('testSection').style.display = 'block';
+            }
+        });
+
+        // Display results
+        // Add single result row (for streaming)
+        function addResultRow(result) {
+            const resultsBody = document.getElementById('resultsBody');
+            const row = document.createElement('tr');
+            row.className = 'fade-in';
+            row.innerHTML = `
+                <td>${result.store_id}</td>
+                <td>${result.store_name}</td>
+                <td><span class="status-badge ${result.status}">${result.status}</span></td>
+                <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
+                <td>${result.actual_landing_url.substring(0, 50)}...</td>
+                <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
+            `;
+            resultsBody.appendChild(row);
+        }
+
+        // Update summary cards (for streaming)
+        function updateSummaryCards(results, finalSummary = null, resultFile = null) {
+            const passed = results.filter(r => r.status === 'PASS').length;
+            const failed = results.filter(r => r.status === 'FAIL').length;
+            const pending = results.filter(r => r.status === 'PENDING').length;
+            const errors = results.filter(r => r.status === 'ERROR').length;
+            const manual = results.filter(r => r.status === 'MANUAL_TESTING_REQUIRED').length;
+
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="summary-card pass">
+                    <div class="summary-label">Passed</div>
+                    <div class="summary-number">${passed}</div>
+                </div>
+                <div class="summary-card fail">
+                    <div class="summary-label">Failed</div>
+                    <div class="summary-number">${failed}</div>
+                </div>
+                <div class="summary-card pending">
+                    <div class="summary-label">Pending</div>
+                    <div class="summary-number">${pending}</div>
+                </div>
+                <div class="summary-card" style="background: rgba(191, 90, 242, 0.1); border-color: rgba(191, 90, 242, 0.2);">
+                    <div class="summary-label">Manual Testing</div>
+                    <div class="summary-number">${manual}</div>
+                </div>
+                <div class="summary-card error">
+                    <div class="summary-label">Errors</div>
+                    <div class="summary-number">${errors}</div>
+                </div>
+                ${resultFile ? `
+                <div class="summary-card" style="background: rgba(0, 113, 227, 0.1); border-color: rgba(0, 113, 227, 0.2);">
+                    <div class="summary-label">CSV Report</div>
+                    <div style="margin-top: 8px;">
+                        <a href="http://localhost:3001${resultFile}" download class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Download</a>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        // Show test again button
+        function showTestAgainButton() {
+            const testAgainContainer = document.querySelector('.test-again-container');
+            if (testAgainContainer) {
+                testAgainContainer.style.display = 'block';
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+
+            // Summary cards
+            const summaryCards = document.getElementById('summaryCards');
+            summaryCards.innerHTML = `
+                <div class="summary-card pass">
+                    <div class="summary-label">Passed</div>
+                    <div class="summary-number">${data.summary.passed}</div>
+                </div>
+                <div class="summary-card fail">
+                    <div class="summary-label">Failed</div>
+                    <div class="summary-number">${data.summary.failed}</div>
+                </div>
+                <div class="summary-card pending">
+                    <div class="summary-label">Pending</div>
+                    <div class="summary-number">${data.summary.pending}</div>
+                </div>
+                <div class="summary-card error">
+                    <div class="summary-label">Errors</div>
+                    <div class="summary-number">${data.summary.errors}</div>
+                </div>
+            `;
+
+            // Results table
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = data.results.map(result => `
+                <tr>
+                    <td>${result.store_id}</td>
+                    <td>${result.store_name}</td>
+                    <td><span class="status-badge ${result.status}">${result.status}</span></td>
+                    <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
+                    <td>${result.actual_landing_url.substring(0, 50)}...</td>
+                    <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Test again
+        document.getElementById('testAgainBtn').addEventListener('click', () => {
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('testSection').style.display = 'block';
+            selectedFile = null;
+            document.getElementById('fileName').textContent = 'None';
+            startBulkTestBtn.disabled = true;
+            document.getElementById('singleStoreForm').reset();
+        });
+
+        // Initialize
+        checkLoginStatus();
+    </script>
+</body>
+</html>

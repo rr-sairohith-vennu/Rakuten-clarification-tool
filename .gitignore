@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+
+# Session files
+rakuten-session.json
+
+# Screenshots and results
+screenshots/
+results/
+
+# Logs
+*.log
+server.log
+
+# Temporary files
+uploads/
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,15 @@
+store_id,store_name,xfas_url,merchant_site_url,network_id
+9,Dell Technologies,https://www.rakuten.com/delltechnologies_9-xfas,https://www.dell.com/en-us,2
+60,TGW The Golf Warehouse,https://www.rakuten.com/thegolfwarehouse_60-xfas,http://www.tgw.com,2
+75,FTD Flowers,https://www.rakuten.com/ftd_75-xfas,http://www.ftd.com,2
+89,Avon,https://www.rakuten.com/avon_89-xfas,http://www.avon.com,2
+96,Barnes and Noble,https://www.rakuten.com/barnesandnoble_96-xfas,http://www.barnesandnoble.com,2
+11,FragranceNet.com,https://www.rakuten.com/fragrancenet_11-xfas,http://www.fragrancenet.com,3
+35,Sharper Image,https://www.rakuten.com/sharperimage_35-xfas,http://www.sharperimage.com,3
+36,Omaha Steaks,https://www.rakuten.com/omahasteaks_36-xfas,http://www.omahasteaks.com/servlet/OnlineShopping,3
+65,Art.com,https://www.rakuten.com/art_65-xfas,http://www.art.com,3
+105,Burpee Gardening,https://www.rakuten.com/burpeegardening_105-xfas,http://www.burpee.com/,3
+103,Frenchtoast.com,https://www.rakuten.com/frenchtoast_103-xfas,http://www.frenchtoast.com,7
+192,Sheet Music Plus,https://www.rakuten.com/sheetmusicplus_192-xfas,http://www.sheetmusicplus.com/,7
+652,Brooks Brothers,https://www.rakuten.com/brooksbrothers_652-xfas,http://www.brooksbrothers.com,7
+4986,Staples,https://www.rakuten.com/staples_4986-xfas,http://www.staples.com,21
