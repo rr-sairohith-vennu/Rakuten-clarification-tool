@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const AUTH_FILE = 'rakuten-session.json';
 
 // Middleware
@@ -718,10 +718,10 @@ app.use('/screenshots', express.static(SCREENSHOT_DIR));
 app.use('/results', express.static(RESULTS_DIR));
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 Rakuten Store Tester API Server`);
     console.log(`=`.repeat(50));
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`✅ Server running on http://0.0.0.0:${PORT}`);
     console.log(`📁 Screenshots: http://localhost:${PORT}/screenshots/`);
     console.log(`📄 Results: http://localhost:${PORT}/results/`);
     console.log(`=`.repeat(50));
