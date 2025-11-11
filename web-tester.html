@@ -823,7 +823,7 @@
                 <td>${result.store_name}</td>
                 <td><span class="status-badge ${result.status}">${result.status}</span></td>
                 <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
-                <td>${result.actual_landing_url.substring(0, 50)}...</td>
+                <td><a href="${result.actual_landing_url}" target="_blank">${result.actual_landing_url.substring(0, 50)}...</a></td>
                 <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
             `;
             resultsBody.appendChild(row);
@@ -911,7 +911,7 @@
                     <td>${result.store_name}</td>
                     <td><span class="status-badge ${result.status}">${result.status}</span></td>
                     <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
-                    <td>${result.actual_landing_url.substring(0, 50)}...</td>
+                    <td><a href="${result.actual_landing_url}" target="_blank">${result.actual_landing_url.substring(0, 50)}...</a></td>
                     <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
                 </tr>
             `).join('');

@@ -71,6 +71,15 @@ async function testStore(context, store, index, total) {
         tested_date: new Date().toISOString().split('T')[0]
     };
 
+    // Track all navigation URLs to capture redirects before they fail
+    const navigationUrls = [];
+    page.on('request', request => {
+        if (request.isNavigationRequest()) {
+            navigationUrls.push(request.url());
+            console.log(`    📡 Navigation to: ${request.url()}`);
+        }
+    });
+
     try {
         await page.goto(testUrl, { waitForLoadState: 'networkidle', timeout: 20000 });
 
@@ -124,22 +133,113 @@ async function testStore(context, store, index, total) {
                                 break;
             }
 
-            // If stuck on chromewebdata, try to trigger JavaScript
+            // If stuck on chromewebdata, use captured navigation URLs
             if (currentDomain === 'chromewebdata' || currentDomain.includes('chrome-error')) {
-                console.log(`    🔄 Stuck on chromewebdata - attempting to trigger redirect...`);
+                console.log(`    🔄 Stuck on chromewebdata - checking navigation history...`);
+                console.log(`    📊 Captured ${navigationUrls.length} navigation URLs`);
 
-                // Try clicking anywhere on the page to trigger events
-                try {
-                    await page.click('body', { timeout: 1000 });
-                    console.log(`    👆 Clicked on body`);
-                } catch (e) {
-                    console.log(`    ⚠️  Click failed: ${e.message}`);
+                // Get the last non-Rakuten, non-error URL from navigation history
+                const lastGoodUrl = navigationUrls.reverse().find(url => {
+                    const domain = getDomain(url);
+                    return domain !== 'rakuten.com' &&
+                           !url.includes('chrome-error') &&
+                           !url.includes('chromewebdata');
+                });
+
+                if (lastGoodUrl) {
+                    console.log(`    ✅ Found redirect URL from navigation: ${lastGoodUrl}`);
+                    const redirectDomain = getDomain(lastGoodUrl);
+
+                    // Check if this matches expected domain
+                    if (redirectDomain === expectedDomain || lastGoodUrl.includes(expectedDomain)) {
+                        result.actual_landing_url = lastGoodUrl;
+                        result.status = 'PASS';
+                        result.error_details = 'Successfully redirected (captured from navigation)';
+                        console.log(`    ✅ PASS - Redirect successful!`);
+
+                        const screenshotPath = path.join(SCREENSHOT_DIR, `PASS_${store.store_id}_${store.store_name.replace(/[^a-z0-9]/gi, '_')}.png`);
+
+                        // Try to navigate to the actual URL and take a real screenshot
+                        try {
+                            console.log(`    📸 Attempting to load ${lastGoodUrl} for screenshot...`);
+                            const response = await page.goto(lastGoodUrl, { waitUntil: 'domcontentloaded', timeout: 10000 });
+                            await page.waitForTimeout(2000); // Wait for page to render
+
+                            // Check if we actually loaded a real page (not an error)
+                            const pageUrl = page.url();
+                            if (!pageUrl.includes('chrome-error') && !pageUrl.includes('chromewebdata') && response && response.ok()) {
+                                // Add URL overlay
+                                await page.evaluate((url) => {
+                                    const overlay = document.createElement('div');
+                                    overlay.style.position = 'fixed';
+                                    overlay.style.top = '0';
+                                    overlay.style.left = '0';
+                                    overlay.style.width = '100%';
+                                    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                                    overlay.style.color = 'white';
+                                    overlay.style.padding = '10px 20px';
+                                    overlay.style.fontFamily = 'monospace';
+                                    overlay.style.fontSize = '14px';
+                                    overlay.style.zIndex = '999999';
+                                    overlay.style.wordBreak = 'break-all';
+                                    overlay.textContent = `🔗 ${url}`;
+                                    document.body.appendChild(overlay);
+                                }, lastGoodUrl);
+
+                                await page.screenshot({ path: screenshotPath, fullPage: true });
+                                result.screenshot_path = screenshotPath;
+                                console.log(`    ✅ Screenshot saved successfully`);
+                            } else {
+                                console.log(`    ⚠️  Page blocked by bot detection - skipping screenshot`);
+                                result.error_details += ' (Screenshot unavailable due to bot detection)';
+                            }
+                        } catch(e) {
+                            console.log(`    ⚠️  Could not load page for screenshot: ${e.message}`);
+                            result.error_details += ' (Screenshot unavailable)';
+                        }
+                        break;
+                    } else {
+                        console.log(`    ❌ Redirect domain ${redirectDomain} doesn't match expected ${expectedDomain}`);
+                    }
                 }
+
+                console.log(`    🔄 Analyzing page content...`);
 
                 // Try evaluating any redirect scripts
                 try {
                     const pageContent = await page.content();
                     console.log(`    📄 Page content length: ${pageContent.length} chars`);
+
+                    // Save the HTML content for debugging
+                    const debugPath = path.join(SCREENSHOT_DIR, `DEBUG_${store.store_id}_${store.store_name.replace(/[^a-z0-9]/gi, '_')}.html`);
+                    fs.writeFileSync(debugPath, pageContent);
+                    console.log(`    💾 Saved HTML to: ${debugPath}`);
+
+                    // Check if it's actually a data URL with redirect script
+                    const hasRedirectScript = await page.evaluate(() => {
+                        const scripts = Array.from(document.querySelectorAll('script'));
+                        const metaRefresh = document.querySelector('meta[http-equiv="refresh"]');
+                        const links = Array.from(document.querySelectorAll('a'));
+
+                        return {
+                            scriptCount: scripts.length,
+                            hasMetaRefresh: !!metaRefresh,
+                            metaContent: metaRefresh ? metaRefresh.getAttribute('content') : null,
+                            linkCount: links.length,
+                            documentTitle: document.title,
+                            bodyText: document.body ? document.body.innerText.substring(0, 200) : ''
+                        };
+                    });
+
+                    console.log(`    🔍 Page analysis:`, JSON.stringify(hasRedirectScript, null, 2));
+
+                    // Try clicking anywhere on the page to trigger events
+                    try {
+                        await page.click('body', { timeout: 1000 });
+                        console.log(`    👆 Clicked on body`);
+                    } catch (e) {
+                        console.log(`    ⚠️  Click failed: ${e.message}`);
+                    }
 
                     await page.evaluate(() => {
                         // Try to find and click any redirect buttons/links
