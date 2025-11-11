@@ -590,7 +590,8 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:3001/api';
+        // Use current host for API calls (works both locally and on Fly.io)
+        const API_BASE = `${window.location.protocol}//${window.location.host}/api`;
         let selectedFile = null;
 
         // Check login status
@@ -824,7 +825,7 @@
                 <td><span class="status-badge ${result.status}">${result.status}</span></td>
                 <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
                 <td><a href="${result.actual_landing_url}" target="_blank">${result.actual_landing_url.substring(0, 50)}...</a></td>
-                <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
+                <td>${result.screenshot_path ? `<a href="${window.location.origin}/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
             `;
             resultsBody.appendChild(row);
         }
@@ -863,7 +864,7 @@
                 <div class="summary-card" style="background: rgba(0, 113, 227, 0.1); border-color: rgba(0, 113, 227, 0.2);">
                     <div class="summary-label">CSV Report</div>
                     <div style="margin-top: 8px;">
-                        <a href="http://localhost:3001${resultFile}" download class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Download</a>
+                        <a href="${window.location.origin}${resultFile}" download class="btn btn-primary" style="font-size: 14px; padding: 8px 16px;">Download</a>
                     </div>
                 </div>
                 ` : ''}
@@ -912,7 +913,7 @@
                     <td><span class="status-badge ${result.status}">${result.status}</span></td>
                     <td><a href="${result.test_url}" target="_blank">${result.test_url.substring(0, 60)}...</a></td>
                     <td><a href="${result.actual_landing_url}" target="_blank">${result.actual_landing_url.substring(0, 50)}...</a></td>
-                    <td>${result.screenshot_path ? `<a href="http://localhost:3001/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
+                    <td>${result.screenshot_path ? `<a href="${window.location.origin}/${result.screenshot_path}" target="_blank">View</a>` : '—'}</td>
                 </tr>
             `).join('');
         }
