@@ -74,6 +74,9 @@ async function testStore(context, store, index, total) {
     try {
         await page.goto(testUrl, { waitForLoadState: 'networkidle', timeout: 20000 });
 
+        // Add small random delay to appear more human-like
+        await page.waitForTimeout(Math.random() * 1000 + 500);
+
         const expectedDomain = getDomain(store.merchant_site_url);
 
         // Wait up to 45 seconds (15 checks x 3 seconds) for redirect to complete
@@ -369,7 +372,10 @@ async function testStoresParallel(stores, batchSize = 3, onResultCallback = null
             '--disable-features=IsolateOrigins,site-per-process',
             '--allow-running-insecure-content',
             '--disable-setuid-sandbox',
-            '--no-zygote'
+            '--no-zygote',
+            '--disable-infobars',
+            '--window-size=1920,1080',
+            '--start-maximized'
         ]
     });
 
@@ -406,7 +412,10 @@ async function testStoresParallel(stores, batchSize = 3, onResultCallback = null
 
         // Add chrome property
         window.chrome = {
-            runtime: {}
+            runtime: {},
+            loadTimes: function() {},
+            csi: function() {},
+            app: {}
         };
 
         // Override permissions
@@ -416,6 +425,22 @@ async function testStoresParallel(stores, batchSize = 3, onResultCallback = null
                 Promise.resolve({ state: Notification.permission }) :
                 originalQuery(parameters)
         );
+
+        // Add more realistic navigator properties
+        Object.defineProperty(navigator, 'maxTouchPoints', {
+            get: () => 1
+        });
+
+        // Override automation detection
+        delete navigator.__proto__.webdriver;
+
+        // Mock battery API
+        navigator.getBattery = () => Promise.resolve({
+            charging: true,
+            chargingTime: 0,
+            dischargingTime: Infinity,
+            level: 1
+        });
     });
 
     console.log(`✅ Browser launched. Testing ${stores.length} stores in batches of ${batchSize}...\n`);
