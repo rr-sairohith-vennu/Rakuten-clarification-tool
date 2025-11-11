@@ -649,6 +649,54 @@ app.delete('/api/logout', (req, res) => {
     }
 });
 
+// Upload session file (for deployment environments)
+app.post('/api/upload-session', express.json(), (req, res) => {
+    try {
+        const { sessionData } = req.body;
+
+        if (!sessionData) {
+            return res.status(400).json({ error: 'No session data provided' });
+        }
+
+        // Validate session data structure
+        if (!sessionData.cookies || !sessionData.origins) {
+            return res.status(400).json({ error: 'Invalid session data format' });
+        }
+
+        // Write session to file
+        fs.writeFileSync(AUTH_FILE, JSON.stringify(sessionData, null, 2));
+        console.log('✅ Session uploaded and saved successfully');
+
+        res.json({
+            success: true,
+            message: 'Session uploaded successfully!'
+        });
+
+    } catch (error) {
+        console.error('Session upload error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Download current session (for backup/transfer)
+app.get('/api/download-session', (req, res) => {
+    try {
+        if (!fs.existsSync(AUTH_FILE)) {
+            return res.status(404).json({ error: 'No session file found' });
+        }
+
+        const sessionData = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
+        res.json({
+            success: true,
+            sessionData
+        });
+
+    } catch (error) {
+        console.error('Session download error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Upload and test CSV with real-time streaming
 app.post('/api/test-csv-stream', upload.single('file'), async (req, res) => {
     try {

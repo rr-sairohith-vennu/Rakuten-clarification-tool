@@ -490,14 +490,17 @@
                     <span class="status-dot logged-out" id="statusDot"></span>
                     <span id="statusText">Checking status...</span>
                 </div>
-                <div>
-                    <button class="btn btn-primary" id="loginBtn" style="display: none;">Login</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" id="loginBtn" style="display: none;">Login (Local Only)</button>
+                    <button class="btn btn-primary" id="uploadSessionBtn" style="display: none;">Upload Session</button>
+                    <button class="btn btn-primary" id="downloadSessionBtn" style="display: none;">Download Session</button>
                     <button class="btn btn-danger" id="logoutBtn" style="display: none;">Logout</button>
                 </div>
             </div>
             <div class="alert" id="loginAlert" style="display: none;">
-                <strong>First time:</strong> Login once (60 seconds), then all tests run automatically in the background.
+                <strong>Deployed environment:</strong> Click "Download Session" locally, then "Upload Session" on deployed server.
             </div>
+            <input type="file" id="sessionFileInput" accept=".json" style="display: none;">
         </div>
 
         <!-- Test Section -->
@@ -603,6 +606,8 @@
                 const statusDot = document.getElementById('statusDot');
                 const statusText = document.getElementById('statusText');
                 const loginBtn = document.getElementById('loginBtn');
+                const uploadSessionBtn = document.getElementById('uploadSessionBtn');
+                const downloadSessionBtn = document.getElementById('downloadSessionBtn');
                 const logoutBtn = document.getElementById('logoutBtn');
                 const loginAlert = document.getElementById('loginAlert');
                 const testSection = document.getElementById('testSection');
@@ -611,6 +616,8 @@
                     statusDot.className = 'status-dot logged-in';
                     statusText.textContent = 'Authenticated';
                     loginBtn.style.display = 'none';
+                    uploadSessionBtn.style.display = 'none';
+                    downloadSessionBtn.style.display = 'inline-block';
                     logoutBtn.style.display = 'inline-block';
                     loginAlert.style.display = 'none';
                     testSection.classList.remove('disabled');
@@ -618,6 +625,8 @@
                     statusDot.className = 'status-dot logged-out';
                     statusText.textContent = 'Not authenticated';
                     loginBtn.style.display = 'inline-block';
+                    uploadSessionBtn.style.display = 'inline-block';
+                    downloadSessionBtn.style.display = 'none';
                     logoutBtn.style.display = 'none';
                     loginAlert.style.display = 'block';
                     testSection.classList.add('disabled');
@@ -654,6 +663,62 @@
             if (confirm('Logout? You will need to login again.')) {
                 await fetch(`${API_BASE}/logout`, { method: 'DELETE' });
                 checkLoginStatus();
+            }
+        });
+
+        // Download session
+        document.getElementById('downloadSessionBtn').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/download-session`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Create downloadable file
+                    const blob = new Blob([JSON.stringify(data.sessionData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'rakuten-session.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    alert('Session downloaded! Upload this file on your deployed server.');
+                } else {
+                    alert('No session found');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Upload session
+        const sessionFileInput = document.getElementById('sessionFileInput');
+        document.getElementById('uploadSessionBtn').addEventListener('click', () => {
+            sessionFileInput.click();
+        });
+
+        sessionFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const content = await file.text();
+                const sessionData = JSON.parse(content);
+
+                const response = await fetch(`${API_BASE}/upload-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionData })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Session uploaded successfully!');
+                    checkLoginStatus();
+                } else {
+                    alert('Upload failed: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error uploading session: ' + error.message);
             }
         });
 
