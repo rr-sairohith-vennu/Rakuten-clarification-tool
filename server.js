@@ -650,7 +650,7 @@ app.delete('/api/logout', (req, res) => {
 });
 
 // Upload session file (for deployment environments)
-app.post('/api/upload-session', express.json(), (req, res) => {
+app.post('/api/upload-session', (req, res) => {
     try {
         const { sessionData } = req.body;
 
